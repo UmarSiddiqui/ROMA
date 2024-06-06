@@ -6,9 +6,15 @@
         <v-toolbar-title>RoomEase</v-toolbar-title>
       </v-btn>
       <v-spacer></v-spacer>
-      <v-btn text @click="goTo('/home')" class="d-none d-md-flex">Dashboard</v-btn>
-      <v-btn text @click="goTo('/chores')" class="d-none d-md-flex">Chores</v-btn>
-      <v-btn text @click="goTo('/expense')" class="d-none d-md-flex">Expense</v-btn>
+      <v-btn text @click="goTo('/home')" class="d-none d-md-flex"
+        >Dashboard</v-btn
+      >
+      <v-btn text @click="goTo('/chores')" class="d-none d-md-flex"
+        >Chores</v-btn
+      >
+      <v-btn text @click="goTo('/expense')" class="d-none d-md-flex"
+        >Expense</v-btn
+      >
       <v-btn text @click="goTo('/login')" class="d-none d-md-flex">Login</v-btn>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" app temporary class="gradient-navbar">
@@ -26,11 +32,11 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineComponent, ref } from "vue";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
-  name: 'App',
+  name: "App",
   setup() {
     const router = useRouter();
     const drawer = ref(false);
@@ -44,12 +50,12 @@ export default defineComponent({
       // Implement your sign out logic here
       console.log("Signing out...");
       // Potentially redirect to home or login page
-      router.push('/signin');
+      router.push("/signin");
     }
 
     return { goTo, signOut, drawer };
-  }
-})
+  },
+});
 </script>
 
 <style>
