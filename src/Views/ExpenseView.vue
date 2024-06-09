@@ -9,7 +9,15 @@
     <v-row>
       <v-col>
         <v-card class="custom-card">
-          <v-card-title class="custom-card-title">Expenses</v-card-title>
+          <v-card-title class="custom-card-title">
+            Expenses
+            <v-btn
+              color="primary"
+              @click="showDialog = true"
+              class="float-right"
+              >Add Expense</v-btn
+            >
+          </v-card-title>
           <v-data-table
             :headers="expenseHeaders"
             :items="expenseList"
@@ -19,6 +27,50 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="showDialog" persistent max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">{{
+            expense.expenseId === 0 ? "Create Expense" : "Edit Expense"
+          }}</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="expense.expenseName"
+                  label="Expense Name"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="expense.expenseDescription"
+                  label="Description"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="expense.amount"
+                  label="Amount"
+                  required
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="showDialog = false"
+            >Close</v-btn
+          >
+          <v-btn color="blue darken-1" text @click="saveExpense">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-row>
       <v-col>
@@ -55,54 +107,68 @@ export default {
   name: "ExpenseView",
   setup() {
     const expenseList = ref([]);
-    const expenseManagementPosts = ref([
-      {
-        title: "How to Manage Your Expenses",
-        link: "https://www.example.com/manage-expenses",
-      },
-      {
-        title: "10 Tips for Better Expense Management",
-        link: "https://www.example.com/expense-tips",
-      },
-      {
-        title: "Expense Management Strategies",
-        link: "https://www.example.com/expense-strategies",
-      },
-      {
-        title: "Budgeting and Expense Tracking",
-        link: "https://www.example.com/budgeting",
-      },
-      {
-        title: "Effective Expense Management",
-        link: "https://www.example.com/effective-management",
-      },
-    ]);
-
     const expenseHeaders = [
       { text: "Expense ID", value: "expenseId" },
       { text: "Name", value: "expenseName" },
       { text: "Description", value: "expenseDescription" },
       { text: "Amount", value: "expenseAmount" },
     ];
+    const expense = ref({
+      expenseId: 0,
+      expenseName: "",
+      expenseDescription: "",
+      amount: 0,
+    });
+    const showDialog = ref(false);
+
+    const loadExpenses = async () => {
+      try {
+        const response = await axios.get(
+          "http://ec2-54-206-19-34.ap-southeast-2.compute.amazonaws.com/api/Expense/GetAll"
+        );
+        expenseList.value = response.data.value;
+      } catch (error) {
+        console.error("Error fetching Expenses data:", error);
+      }
+    };
+
+    const saveExpense = async () => {
+      console.log("Saving expense:", expense.value); // Debugging output
+      try {
+        const payload = {
+          ...expense.value,
+          amount: parseFloat(expense.value.amount), // Ensure amount is sent as a float
+        };
+        console.log("Payload sent to server:", payload); // Debugging output
+        const response = await axios.post(
+          "http://ec2-54-206-19-34.ap-southeast-2.compute.amazonaws.com/api/Expense/CreateEdit",
+          payload
+        );
+        console.log("Server response:", response.data); // Log server response
+        showDialog.value = false;
+        await loadExpenses();
+        expense.value = {
+          expenseId: 0,
+          expenseName: "",
+          expenseDescription: "",
+          amount: 0,
+        };
+      } catch (error) {
+        console.error("Error saving the expense:", error);
+      }
+    };
 
     onMounted(() => {
-      axios
-        .get(
-          "http://ec2-54-206-19-34.ap-southeast-2.compute.amazonaws.com/api/Expense/GetAll"
-        )
-        .then((response) => {
-          console.log(response.data); // Add this line to log the data
-          expenseList.value = response.data.value;
-        })
-        .catch((error) => {
-          console.error("Error fetching Expenses data:", error);
-        });
+      loadExpenses();
     });
 
     return {
       expenseList,
       expenseHeaders,
-      expenseManagementPosts,
+      expense,
+      showDialog,
+      loadExpenses,
+      saveExpense,
     };
   },
 };
